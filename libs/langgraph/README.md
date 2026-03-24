@@ -86,6 +86,55 @@ While LangGraph can be used standalone, it also integrates seamlessly with any L
 - [LangChain Academy](https://academy.langchain.com/courses/intro-to-langgraph): Learn the basics of LangGraph in our free, structured course.
 - [Case studies](https://www.langchain.com/built-with-langgraph): Hear how industry leaders use LangGraph to ship AI applications at scale.
 
+## Demo workflow
+
+This package includes a single-file customer-support demo at `langgraph.customer_support_demo`.
+It is designed to show the core LangGraph capabilities in one flow:
+
+- SQLite-backed durable execution
+- human review with `interrupt` and `Command(resume=...)`
+- short-term memory via thread state
+- long-term memory via a persisted `InMemoryStore`
+- LangSmith-friendly metadata on each run
+
+Run the demo:
+
+```bash
+uv run python -m langgraph.customer_support_demo start \
+  --thread-id demo-1 \
+  --user-id user-123 \
+  --message "我要退款"
+```
+
+If the ticket requires human review and you are running in an interactive terminal
+or IDE console, the demo will pause and ask for one of these inputs directly in
+the console:
+
+```text
+approve
+edit:改为补偿优惠券，不直接退款
+response:先安抚用户，再升级给人工主管
+```
+
+Resume an interrupted run:
+
+```bash
+uv run python -m langgraph.customer_support_demo resume \
+  --thread-id demo-1 \
+  --approve
+```
+
+Or override the draft action:
+
+```bash
+uv run python -m langgraph.customer_support_demo resume \
+  --thread-id demo-1 \
+  --edit "改为补偿优惠券，不直接退款"
+```
+
+Set `LANGSMITH_TRACING=true` and `LANGSMITH_API_KEY` to view traces in LangSmith.
+This demo now expects a real LLM by default, so install `langchain-openai` and set `OPENAI_API_KEY` if you want to use it as an agent rather than a deterministic workflow. The heuristic fallback is still available for local debugging and tests, but it must be enabled explicitly with `LANGGRAPH_DEMO_ALLOW_HEURISTIC=true`.
+
 ## Acknowledgements
 
 LangGraph is inspired by [Pregel](https://research.google/pubs/pub37252/) and [Apache Beam](https://beam.apache.org/). The public interface draws inspiration from [NetworkX](https://networkx.org/documentation/latest/). LangGraph is built by LangChain Inc, the creators of LangChain, but can be used without LangChain.
